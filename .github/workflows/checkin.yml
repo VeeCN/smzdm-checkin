@@ -1,0 +1,36 @@
+name: SMZDM Checkin & Lottery
+
+on:
+  schedule:
+    - cron: '15 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pycryptodome
+
+      - name: Run SMZDM checkin and lottery
+        env:
+          SMZDM_COOKIE: ${{ secrets.SMZDM_COOKIE }}
+        run: |
+          if [ -z "$SMZDM_COOKIE" ]; then
+            echo "::error::Please configure the SMZDM_COOKIE repository secret."
+            exit 1
+          fi
+          python smzdm_sign.py
